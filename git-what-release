@@ -14,7 +14,11 @@ matches=$(git log --grep "$search" --format=oneline --decorate=false)
 IFS=$'\n'
 for match in $matches; do
     IFS=' ' read -r commit msg <<< "$match"
-    tag=$(git describe --contains $commit)
+    tag=$(git describe --contains $commit 2>&1)
+    if [ "$?" -eq 128 ]; then
+        # it hasn't been released yet
+        tag="n/a"
+    fi
     tag=$(echo $tag | cut -d '~' -f 1 | cut -d '^' -f 1)
     echo -e "\033[0;33m${tag%~*}\033[0m \033[1;33m$commit\033[0m $msg"
 done
